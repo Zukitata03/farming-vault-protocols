@@ -3,6 +3,7 @@
     "@morpho-org/blue-sdk": "^3.0.9",
     "@morpho-org/blue-sdk-viem": "^3.1.1",
     "@morpho-org/morpho-ts": "2.4.1",
+    "@skip-go/client": "^1.5.2",
     "@uniswap/sdk-core": "^7.7.2",
     "@uniswap/smart-order-router": "^4.22.16",
     "@uniswap/v3-sdk": "^3.25.2",
@@ -10,6 +11,7 @@
     "ethers": "npm:ethers@^6.15.0",
     "mongoose": "^7.0.5",
     "node-fetch": "^2.7.0",
+    "protobufjs": "^7.5.3",
     "typescript": "^5.9.2",
     "viem": "^2.33.3"
   }

@@ -1,4 +1,4 @@
-import * as ethersV6 from "ethers-v6";
+// import * as ethersV6 from "ethers-v6";
 import { ethers } from "ethers";
 import type { Protocol, Vault } from "../types/protocol";
 import { MAXAPY_ABI } from "../utils/abis";
