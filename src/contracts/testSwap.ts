@@ -33,7 +33,7 @@
 //     return {
 //         dex: "uniswap",
 //         amountOutRaw: quoteRaw,
-//         amountOut: ethers.utils.formatUnits(quoteRaw, 6),
+//         amountOut: ethers.formatUnits(quoteRaw, 6),
 //         gasEstimate: route.estimatedGasUsed.toString(),
 //         routeSummary: route.route[0]?.tokenPath.map(token => token.symbol).join(" → ") ?? "multi"
 
@@ -61,7 +61,7 @@
 //     return {
 //         dex: "paraswap",
 //         amountOutRaw: out,
-//         amountOut: ethers.utils.formatUnits(out, 6),
+//         amountOut: ethers.formatUnits(out, 6),
 //         gasEstimate: data?.priceRoute?.gasCost ?? null,
 //         routeSummary: (data?.priceRoute?.bestRoute ?? [])
 //             .map((leg: any) => leg.swaps?.map((s: any) => s.srcTokenSymbol + "→" + s.destTokenSymbol).join(","))
@@ -88,7 +88,7 @@
 //     return {
 //         dex: "kyberswap",
 //         amountOutRaw: out,
-//         amountOut: ethers.utils.formatUnits(out, 6),
+//         amountOut: ethers.formatUnits(out, 6),
 //         gasEstimate: data?.data?.routeSummary?.gas ?? null,
 //         routeSummary: (data?.data?.routeSummary?.route ?? [])
 //             .map((r: any) => (r?.dexes ?? []).map((d: any) => d.dex?.name).join("+")).join(" → "),
@@ -97,7 +97,7 @@
 
 // // ---------- One call to compare all ----------
 // export async function quoteAllUSDCtoUSDT_Base(amountUsdc: string) {
-//     const amountRaw = ethers.utils.parseUnits(amountUsdc, 6).toString();
+//     const amountRaw = ethers.parseUnits(amountUsdc, 6).toString();
 //     const [uni, para, kyber] = await Promise.all([
 //         quoteUniswapUSDCtoUSDT(amountRaw).catch(e => ({ dex: "uniswap", error: e.message })),
 //         quoteParaswapUSDCtoUSDT(amountRaw).catch(e => ({ dex: "paraswap", error: e.message })),
@@ -121,7 +121,7 @@ import { AlphaRouter, SwapType } from "@uniswap/smart-order-router";
 import { Token, CurrencyAmount, TradeType, Percent } from "@uniswap/sdk-core";
 const KYBER_HEADERS = { "Accept": "application/json", "X-Client-Id": "MyAwesomeApp" };
 const RPC = "https://mainnet.base.org";
-const provider = new ethers.providers.JsonRpcProvider(RPC);
+const provider = new ethers.JsonRpcProvider(RPC);
 const CHAIN_ID = 8453;
 
 // ===== knobs you may tweak =====
@@ -133,32 +133,32 @@ const GAS_PRICE_GWEI = 0.1;              // used if USE_PROVIDER_GAS_PRICE = fal
 const USDC = new Token(CHAIN_ID, "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 6, "USDC", "USD Coin");
 const USDT = new Token(CHAIN_ID, "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2", 6, "USDT", "Tether USD");
 
-// ---------- Uniswap ----------
-async function quoteUniswap(amountUsdcRaw: string) {
-    const router = new AlphaRouter({ chainId: CHAIN_ID, provider });
-    const amountIn = CurrencyAmount.fromRawAmount(USDC, amountUsdcRaw);
+// // ---------- Uniswap ----------
+// async function quoteUniswap(amountUsdcRaw: string) {
+//     const router = new AlphaRouter({ chainId: CHAIN_ID, provider });
+//     const amountIn = CurrencyAmount.fromRawAmount(USDC, amountUsdcRaw);
 
-    const route = await router.route(amountIn, USDT, TradeType.EXACT_INPUT, {
-        type: SwapType.SWAP_ROUTER_02,
-        recipient: "0x688a38F2AA707f087cb67E92DeD8c3Bdbaa73A4e",
-        slippageTolerance: new Percent(5, 10_000),
-        deadline: Math.floor(Date.now() / 1000) + 1800,
-    });
+//     const route = await router.route(amountIn, USDT, TradeType.EXACT_INPUT, {
+//         type: SwapType.SWAP_ROUTER_02,
+//         recipient: "0x688a38F2AA707f087cb67E92DeD8c3Bdbaa73A4e",
+//         slippageTolerance: new Percent(5, 10_000),
+//         deadline: Math.floor(Date.now() / 1000) + 1800,
+//     });
 
-    if (!route) throw new Error("Uniswap: no route found");
+//     if (!route) throw new Error("Uniswap: no route found");
 
-    const quoteRaw = route.quote.quotient.toString();
-    return {
-        dex: "uniswap",
-        amountOutRaw: quoteRaw,
-        amountOut: Number(ethers.utils.formatUnits(quoteRaw, 6)),
-        gasUnits: Number(route.estimatedGasUsed?.toString() ?? "0"),
-        routeSummary:
-            route.route?.[0]?.tokenPath?.map((t: any) => t.symbol).join(" → ")
-            ?? route.route?.[0]?.tokenPath?.map((t: any) => t.symbol).join(" → ")
-            ?? "multi",
-    };
-}
+//     const quoteRaw = route.quote.quotient.toString();
+//     return {
+//         dex: "uniswap",
+//         amountOutRaw: quoteRaw,
+//         amountOut: Number(ethers.formatUnits(quoteRaw, 6)),
+//         gasUnits: Number(route.estimatedGasUsed?.toString() ?? "0"),
+//         routeSummary:
+//             route.route?.[0]?.tokenPath?.map((t: any) => t.symbol).join(" → ")
+//             ?? route.route?.[0]?.tokenPath?.map((t: any) => t.symbol).join(" → ")
+//             ?? "multi",
+//     };
+// }
 
 // ---------- ParaSwap (v6.2) ----------
 async function quoteParaswap(amountRaw: string) {
@@ -182,7 +182,7 @@ async function quoteParaswap(amountRaw: string) {
     return {
         dex: "paraswap",
         amountOutRaw: destAmount,
-        amountOut: Number(ethers.utils.formatUnits(destAmount, 6)),
+        amountOut: Number(ethers.formatUnits(destAmount, 6)),
         gasUnits: Number(pr?.gasCost ?? 0), // gas units (not wei)
         routeSummary: (pr?.bestRoute ?? [])
             .map((leg: any) => (leg?.swaps ?? [])
@@ -231,7 +231,7 @@ async function quoteKyber(amountRaw: string) {
     return {
         dex: "kyberswap",
         amountOutRaw: out,
-        amountOut: Number(ethers.utils.formatUnits(out, 6)),
+        amountOut: Number(ethers.formatUnits(out, 6)),
         gasUnits,
         routeSummary: routeSummaryPretty,
     };
@@ -239,10 +239,10 @@ async function quoteKyber(amountRaw: string) {
 
 // ---------- helpers ----------
 function gweiToWei(gwei: number) {
-    return ethers.utils.parseUnits(gwei.toString(), "gwei");
+    return ethers.parseUnits(gwei.toString(), "gwei");
 }
 function weiToEth(wei: ethers.BigNumberish) {
-    return Number(ethers.utils.formatEther(wei));
+    return Number(ethers.formatEther(wei));
 }
 
 type Quote = {
@@ -253,9 +253,9 @@ type Quote = {
     routeSummary?: string;
 };
 
-async function getGasPriceWei(): Promise<ethers.BigNumber> {
+async function getGasPriceWei(): Promise<ethers.BigNumberish> {
     if (USE_PROVIDER_GAS_PRICE) {
-        return await provider.getGasPrice(); // wei
+        return (await provider.getFeeData()).gasPrice; // wei
     } else {
         return gweiToWei(GAS_PRICE_GWEI);    // wei
     }
@@ -263,10 +263,10 @@ async function getGasPriceWei(): Promise<ethers.BigNumber> {
 
 function computeNet(
     q: Quote,
-    gasPriceWei: ethers.BigNumber,
+    gasPriceWei: bigint,
     ethPriceUSDC: number
 ) {
-    const gasCostWei = gasPriceWei.mul(Math.max(q.gasUnits || 0, 0));
+    const gasCostWei = gasPriceWei * BigInt(Math.max(q.gasUnits || 0, 0));
     const gasCostETH = weiToEth(gasCostWei);
     const gasCostUSDC = gasCostETH * ethPriceUSDC;
 
@@ -281,13 +281,14 @@ function computeNet(
     try {
         console.log("Starting quotes on Base…");
         const amountHuman = "1000"; // e.g., 10,000 USDC
-        const amountRaw = ethers.utils.parseUnits(amountHuman, 6).toString();
+        const amountRaw = ethers.parseUnits(amountHuman, 6).toString();
 
         const gasPriceWei = await getGasPriceWei();
+        const gasPriceWeiBigInt = BigInt(gasPriceWei?.toString() ?? "0");
 
         const results = await Promise.allSettled([
             // quoteUniswap(amountRaw),
-            // quoteParaswap(amountRaw),
+            quoteParaswap(amountRaw),
             quoteKyber(amountRaw),
         ]);
 
@@ -295,7 +296,7 @@ function computeNet(
             .map(r => (r.status === "fulfilled" ? r.value : null))
             .filter(Boolean) as Quote[];
 
-        const enriched = quotes.map(q => computeNet(q, gasPriceWei, ETH_PRICE_USDC));
+        const enriched = quotes.map(q => computeNet(q, gasPriceWeiBigInt, ETH_PRICE_USDC));
 
         // sort by gross and by net
         const byGross = [...enriched].sort((a, b) => b.amountOut - a.amountOut);
@@ -305,7 +306,7 @@ function computeNet(
         const pad = (s: any, n: number) => String(s).padEnd(n);
         const fmt = (n?: number) => (n == null ? "-" : n.toFixed(6));
 
-        console.log("\nGas price (wei):", gasPriceWei.toString(), "| (gwei):", weiToEth(gasPriceWei) * 1e9);
+        console.log("\nGas price (wei):", gasPriceWeiBigInt.toString(), "| (gwei):", weiToEth(gasPriceWeiBigInt) * 1e9);
         console.log("ETH price (USDC):", ETH_PRICE_USDC, "\n");
 
         console.log(pad("DEX", 12), pad("GrossOut(USDT)", 18), pad("GasUnits", 10), pad("Gas(ETH)", 12), pad("Gas(USDC)", 12), pad("NetOut(USDT)", 16));

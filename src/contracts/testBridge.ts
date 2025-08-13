@@ -2,7 +2,7 @@
 import { ethers } from "ethers";
 
 // ===== RPC + pricing knobs =====
-const PROVIDER_BASE = new ethers.providers.JsonRpcProvider("https://mainnet.base.org");
+const PROVIDER_BASE = new ethers.JsonRpcProvider("https://mainnet.base.org");
 const ETH_PRICE_USDC = 3000;             // update to current
 const USE_PROVIDER_GAS_PRICE = true;
 const GAS_PRICE_GWEI_FALLBACK = 0.1;
@@ -17,19 +17,22 @@ const USDC_SOL = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const FROM_ADDRESS = "0x688a38F2AA707f087cb67E92DeD8c3Bdbaa73A4e";  // the wallet that holds the USDC on source chain
 const TO_ADDRESS = "0x688a38F2AA707f087cb67E92DeD8c3Bdbaa73A4e";  // typically same as from, can be different
 // ===== Helpers =====
-const gweiToWei = (g: number) => ethers.utils.parseUnits(g.toString(), "gwei");
-const weiToEth = (w: ethers.BigNumberish) => Number(ethers.utils.formatEther(w));
+const gweiToWei = (g: number) => ethers.parseUnits(g.toString(), "gwei");
+const weiToEth = (w: ethers.BigNumberish) => Number(ethers.formatEther(w));
 const fmt6 = (n: number) => n.toFixed(6);
 
 async function getGasPriceWei() {
-    if (USE_PROVIDER_GAS_PRICE) return await PROVIDER_BASE.getGasPrice();
+    if (USE_PROVIDER_GAS_PRICE) {
+        const feeData = await PROVIDER_BASE.getFeeData();
+        return feeData.gasPrice || gweiToWei(GAS_PRICE_GWEI_FALLBACK);
+    }
     return gweiToWei(GAS_PRICE_GWEI_FALLBACK);
 }
 
 type Q = { name: string; grossOut: number; amountOutRaw: string; gasUnits: number; routeSummary?: string };
 
-function withGas(q: Q, gasPriceWei: ethers.BigNumber) {
-    const gasETH = weiToEth(gasPriceWei.mul(Math.max(q.gasUnits || 0, 0)));
+function withGas(q: Q, gasPriceWei: bigint) {
+    const gasETH = weiToEth(gasPriceWei * BigInt(Math.max(q.gasUnits || 0, 0)));
     const gasUSDC = gasETH * ETH_PRICE_USDC;
     return { ...q, gasETH, gasUSDC, netOut: q.grossOut - gasUSDC };
 }
@@ -71,7 +74,7 @@ async function quoteSkip_USDC(params: {
 
     return {
         name: "skip",
-        grossOut: Number(ethers.utils.formatUnits(amountOutRaw, 6)),
+        grossOut: Number(ethers.formatUnits(amountOutRaw, 6)),
         amountOutRaw,
         gasUnits: Number(data?.evm_tx?.gas ?? 0),
         routeSummary,
@@ -108,7 +111,7 @@ async function quoteLiFi_USDC(fromChainId: number, toChainId: number, amountRaw:
 
     return {
         name: "lifi",
-        grossOut: Number(ethers.utils.formatUnits(toAmount, 6)),
+        grossOut: Number(ethers.formatUnits(toAmount, 6)),
         amountOutRaw: toAmount,
         gasUnits,
         routeSummary,
@@ -145,7 +148,7 @@ async function quoteSocket_USDC(fromChainId: number, toChainId: number, amountRa
 
     return {
         name: "socket",
-        grossOut: Number(ethers.utils.formatUnits(toAmount, 6)),
+        grossOut: Number(ethers.formatUnits(toAmount, 6)),
         amountOutRaw: toAmount,
         gasUnits: 0, // Socket often doesn't surface units in quote; leave 0 to avoid fake gas
         routeSummary,
@@ -157,7 +160,7 @@ async function quoteSocket_USDC(fromChainId: number, toChainId: number, amountRa
 (async () => {
     try {
         const amountHuman = "10000"; // 10k USDC
-        const amountRaw = ethers.utils.parseUnits(amountHuman, 6).toString();
+        const amountRaw = ethers.parseUnits(amountHuman, 6).toString();
         const gasPriceWei = await getGasPriceWei();
 
         const pairs = [

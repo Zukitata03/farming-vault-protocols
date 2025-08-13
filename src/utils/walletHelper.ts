@@ -1,15 +1,15 @@
 import { ethers } from "ethers";
 import { mainnet, arbitrum, base } from "viem/chains";
 import { createPublicClient, erc20Abi, erc4626Abi, http } from "viem";
-import * as ethersV6 from 'ethers-v6';
+// import * as ethersV6 from 'ethers-v6';
 // Helper to create a provider (from your config or environment)
-export function getProviderV6(rpcUrl: string) {
-  return new ethersV6.JsonRpcProvider(rpcUrl);
+export function getProvider(rpcUrl: string) {
+  return new ethers.JsonRpcProvider(rpcUrl);
 }
 
 // Helper to create a wallet (with privateKey and provider)
-export function getWalletV6(mnemonic: string, provider: ethersV6.JsonRpcProvider) {
-  return ethersV6.Wallet.fromPhrase(mnemonic).connect(provider);
+export function getWallet(mnemonic: string, provider: ethers.JsonRpcProvider) {
+  return ethers.Wallet.fromPhrase(mnemonic).connect(provider);
 }
 export const CHAIN_RPC: Record<string, string> = {
   arbitrum: "https://arb1.arbitrum.io/rpc",
@@ -97,11 +97,11 @@ export async function previewDeposit(
 }
 
 
-// Ethers v5 helpers (for Uniswap compatibility)
-export function getProvider(rpcUrl: string) {
-  return new ethers.providers.JsonRpcProvider(rpcUrl);
-}
+// // Ethers v5 helpers (for Uniswap compatibility)
+// export function getProvider(rpcUrl: string) {
+//   return new ethers.providers.JsonRpcProvider(rpcUrl);
+// }
 
-export function getWallet(mnemonic: string, provider: ethers.providers.JsonRpcProvider) {
-  return ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
-}
+// export function getWallet(mnemonic: string, provider: ethers.providers.JsonRpcProvider) {
+//   return ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
+// }

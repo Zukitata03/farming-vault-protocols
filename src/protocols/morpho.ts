@@ -1,4 +1,4 @@
-import * as ethersV6 from "ethers-v6";
+// import * as ethersV6 from "ethers-v6";
 import { ethers } from "ethers";
 import type { ContractCall, Protocol, Vault } from "../types/protocol";
 // import { metaMorphoAbi } from "@morpho-org/blue-sdk-viem";

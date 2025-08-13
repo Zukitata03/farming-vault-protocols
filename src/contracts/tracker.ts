@@ -1,4 +1,4 @@
-import * as ethersv6 from 'ethers-v6';
+import { ethers } from "ethers";
 
 /**
  * ERC-4626 PnL tracker (receipts-based, ethers v6)
@@ -47,12 +47,12 @@ const STRATEGIES: StrategyCfg[] = [
 ];
 
 /* ===================== Infra: providers, pacing, retries ===================== */
-const providerCache: Record<string, ethersv6.JsonRpcProvider> = {};
+const providerCache: Record<string, ethers.JsonRpcProvider> = {};
 const nextAvailableAt: Record<string, number> = {};
 
 function getProvider(rpc: string) {
     if (!providerCache[rpc]) {
-        providerCache[rpc] = new ethersv6.JsonRpcProvider(rpc);
+        providerCache[rpc] = new ethers.JsonRpcProvider(rpc);
         nextAvailableAt[rpc] = 0;
     }
     return providerCache[rpc];
@@ -110,7 +110,7 @@ const ERC20_TRANSFER_ABI = [
 ];
 
 /* ===================== Helpers ===================== */
-const fmtUnits = (x: bigint, d: number) => ethersv6.formatUnits(x, d);
+const fmtUnits = (x: bigint, d: number) => ethers.formatUnits(x, d);
 const pct = (x: number) => (x * 100).toFixed(2) + "%";
 
 /**
@@ -121,19 +121,19 @@ const pct = (x: number) => (x * 100).toFixed(2) + "%";
 async function costBasisFromReceipts(vault: VaultCfg, wallet: string): Promise<bigint> {
     const rpc = vault.rpc;
     const provider = getProvider(rpc);
-    const shareTokenAddr = ethersv6.getAddress(vault.address);
-    const zero = ethersv6.ZeroAddress;
+    const shareTokenAddr = ethers.getAddress(vault.address);
+    const zero = ethers.ZeroAddress;
 
     if (!vault.txs || vault.txs.length === 0) {
         return 0n;
     }
-    const transferIface = new ethersv6.Interface(ERC20_TRANSFER_ABI);
+    const transferIface = new ethers.Interface(ERC20_TRANSFER_ABI);
     const transferTopic = transferIface.getEvent("Transfer").topicHash;
-    const erc4626 = new ethersv6.Contract(vault.address, ERC4626_ABI, provider);
+    const erc4626 = new ethers.Contract(vault.address, ERC4626_ABI, provider);
 
     let assetsIn = 0n;
     let assetsOut = 0n;
-    const walletAddr = ethersv6.getAddress(wallet);
+    const walletAddr = ethers.getAddress(wallet);
 
     for (const hash of vault.txs) {
         const rcpt = await safeCall(rpc, () => provider.getTransactionReceipt(hash));
@@ -142,8 +142,8 @@ async function costBasisFromReceipts(vault: VaultCfg, wallet: string): Promise<b
 
         for (const log of logs) {
             const ev = transferIface.decodeEventLog("Transfer", log.data, log.topics) as unknown as { from: string; to: string; value: bigint; };
-            const from = ethersv6.getAddress(ev.from);
-            const to = ethersv6.getAddress(ev.to);
+            const from = ethers.getAddress(ev.from);
+            const to = ethers.getAddress(ev.to);
             const shares: bigint = ev.value;
 
             if (from === zero && to === walletAddr) {
@@ -168,14 +168,14 @@ async function costBasisFromReceipts(vault: VaultCfg, wallet: string): Promise<b
 async function fallbackCostBasis(vault: VaultCfg, assetDecimals: number): Promise<bigint> {
     const rpc = vault.rpc;
     const provider = getProvider(rpc);
-    const erc4626 = new ethersv6.Contract(vault.address, ERC4626_ABI, provider);
+    const erc4626 = new ethers.Contract(vault.address, ERC4626_ABI, provider);
 
     // shares@blocks
     if (vault.sharesAtBlocks && vault.sharesAtBlocks.length > 0) {
         const sd = await safeCall(rpc, () => erc4626.decimals()).then(Number);
         let total = 0n;
         for (const it of vault.sharesAtBlocks) {
-            const shares = ethersv6.parseUnits(it.shares, sd);
+            const shares = ethers.parseUnits(it.shares, sd);
             const assetsAtBlock = await safeCall(rpc, () => erc4626.convertToAssets(shares, { blockTag: it.block }));
             total += assetsAtBlock;
         }
@@ -184,7 +184,7 @@ async function fallbackCostBasis(vault: VaultCfg, assetDecimals: number): Promis
 
     // manual assets
     if (typeof vault.manualAssetsIn === "string" && vault.manualAssetsIn.length > 0) {
-        return ethersv6.parseUnits(vault.manualAssetsIn, assetDecimals);
+        return ethers.parseUnits(vault.manualAssetsIn, assetDecimals);
     }
 
     return 0n;
@@ -194,11 +194,11 @@ async function fallbackCostBasis(vault: VaultCfg, assetDecimals: number): Promis
 async function calcVaultPosition(vault: VaultCfg, wallet: string) {
     const rpc = vault.rpc;
     const provider = getProvider(rpc);
-    const erc4626 = new ethersv6.Contract(vault.address, ERC4626_ABI, provider);
+    const erc4626 = new ethers.Contract(vault.address, ERC4626_ABI, provider);
 
     // Underlying asset metadata
     const assetAddr: string = await safeCall(rpc, () => erc4626.asset());
-    const asset = new ethersv6.Contract(assetAddr, ERC20_ABI, provider);
+    const asset = new ethers.Contract(assetAddr, ERC20_ABI, provider);
     const [assetDecimals, assetSymbol] = await Promise.all([
         safeCall(rpc, () => asset.decimals()).then(Number),
         safeCall(rpc, () => asset.symbol()),
