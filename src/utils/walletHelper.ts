@@ -14,6 +14,7 @@ export function getWallet(mnemonic: string, provider: ethers.JsonRpcProvider) {
 export const CHAIN_RPC: Record<string, string> = {
   arbitrum: "https://arb1.arbitrum.io/rpc",
   base: "https://mainnet.base.org",
+  ethereum: "https://eth.llamarpc.com",
 };
 
 export const CHAIN_OBJECT: Record<string, any> = {

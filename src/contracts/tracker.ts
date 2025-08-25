@@ -23,6 +23,18 @@ type StrategyCfg = {
     vaults: VaultCfg[];
 };
 
+// === Multicall3 (ADD under ABIs) ===
+// Same address on Base + Arbitrum
+const MULTICALL3_ADDR = "0xCA11bde05977b3631167028862bE2a173976CA11" as const;
+const MULTICALL3_ABI = [
+    "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) payable returns (tuple(bool success, bytes returnData)[] returnData)"
+];
+type MC3Call = { target: string; allowFailure: boolean; callData: string };
+
+
+
+
+
 /* ===================== CONFIG ===================== */
 // Example config (txs empty; fill them with your hashes)
 const STRATEGIES: StrategyCfg[] = [
@@ -30,7 +42,7 @@ const STRATEGIES: StrategyCfg[] = [
         name: "Strategy 1",
         wallet: "0x7227fF47efeC35f3D72375143146b70F5D1ec53d",
         vaults: [
-            { name: "silo-v2", rpc: "https://arb1.arbitrum.io/rpc", address: "0x2433D6AC11193b4695D9ca73530de93c538aD18a", txs: ["0x82b4add0556f1cfbe21a377700517b103db199fc0035c01f48d1ec0c6433bc36"] },
+            { name: "silo-v2", rpc: "https://arbitrum-one.public.blastapi.io", address: "0x2433D6AC11193b4695D9ca73530de93c538aD18a", txs: ["0x82b4add0556f1cfbe21a377700517b103db199fc0035c01f48d1ec0c6433bc36"] },
             { name: "wasabi", rpc: "https://mainnet.base.org", address: "0x1C4a802FD6B591BB71dAA01D8335e43719048B24", txs: ["0x4fe799c24f706fff2cfc095482649b44daf05ab290670e1792475ebd6446d748"] },
             { name: "maxapy", rpc: "https://mainnet.base.org", address: "0x7a63e8FC1d0A5E9BE52f05817E8C49D9e2d6efAe", txs: ["0x2b81413833a17cf642549053b2223698b094c1e3f05890edd90ed1338f92f2f3"] },
         ],
@@ -57,6 +69,37 @@ function getProvider(rpc: string) {
     }
     return providerCache[rpc];
 }
+
+// === Helper (ADD under Helpers) ===
+async function readSharesAndAssetsAtBlock(
+    vaultAddr: string,
+    wallet: string,
+    blockTag: number,
+    rpc: string
+): Promise<{ shares: bigint; assets: bigint }> {
+    const provider = getProvider(rpc);
+    const erc4626 = new ethers.Contract(vaultAddr, ERC4626_ABI, provider);
+
+    try {
+        // Multicall3 batch
+        const mc = new ethers.Contract(MULTICALL3_ADDR, MULTICALL3_ABI, provider);
+        const iface = new ethers.Interface(ERC4626_ABI);
+        const calls: MC3Call[] = [
+            { target: vaultAddr, allowFailure: false, callData: iface.encodeFunctionData("balanceOf", [wallet]) },
+            { target: vaultAddr, allowFailure: false, callData: iface.encodeFunctionData("convertToAssets", [ethers.MaxUint256]) } // placeholder; we’ll re-call with real shares below if needed
+        ];
+        // We need shares first to compute assets; do a two-step but still on same block:
+        const [sharesRaw]: [bigint] = await safeCall(rpc, () => erc4626.balanceOf(wallet, { blockTag }));
+        const assets = await safeCall(rpc, () => erc4626.convertToAssets(sharesRaw, { blockTag }));
+        return { shares: sharesRaw, assets };
+    } catch {
+        // Fallback: two separate calls pinned to block
+        const shares = await safeCall(rpc, () => erc4626.balanceOf(wallet, { blockTag }));
+        const assets = await safeCall(rpc, () => erc4626.convertToAssets(shares, { blockTag }));
+        return { shares, assets };
+    }
+}
+
 
 function sleep(ms: number) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -191,12 +234,56 @@ async function fallbackCostBasis(vault: VaultCfg, assetDecimals: number): Promis
 }
 
 /* ===================== Core calc ===================== */
-async function calcVaultPosition(vault: VaultCfg, wallet: string) {
+// async function calcVaultPosition(vault: VaultCfg, wallet: string) {
+//     const rpc = vault.rpc;
+//     const provider = getProvider(rpc);
+//     const erc4626 = new ethers.Contract(vault.address, ERC4626_ABI, provider);
+
+//     // Underlying asset metadata
+//     const assetAddr: string = await safeCall(rpc, () => erc4626.asset());
+//     const asset = new ethers.Contract(assetAddr, ERC20_ABI, provider);
+//     const [assetDecimals, assetSymbol] = await Promise.all([
+//         safeCall(rpc, () => asset.decimals()).then(Number),
+//         safeCall(rpc, () => asset.symbol()),
+//     ]);
+
+//     // Share decimals, wallet shares, current value
+//     const shareDecimals = await safeCall(rpc, () => erc4626.decimals()).then(Number);
+//     const walletShares: bigint = await safeCall(rpc, () => erc4626.balanceOf(wallet));
+//     const currentAssets: bigint = await safeCall(rpc, () => erc4626.convertToAssets(walletShares));
+
+//     // Cost basis: prefer receipts → fallback paths
+//     let costBasisAssets: bigint = 0n;
+//     try {
+//         const fromReceipts = await costBasisFromReceipts(vault, wallet);
+//         if (fromReceipts > 0n) {
+//             costBasisAssets = fromReceipts;
+//         } else {
+//             costBasisAssets = await fallbackCostBasis(vault, assetDecimals);
+//         }
+//     } catch (e) {
+//         console.warn(`[WARN] Cost basis via receipts failed for ${vault.address} on ${rpc}: ${(e as any)?.message ?? e}`);
+//         costBasisAssets = await fallbackCostBasis(vault, assetDecimals);
+//     }
+
+//     const pnl = currentAssets - costBasisAssets;
+//     const roi = costBasisAssets > 0n ? Number(pnl) / Number(costBasisAssets) : 0;
+
+//     return {
+//         assetSymbol, assetDecimals,
+//         shareDecimals,
+//         walletShares, currentAssets,
+//         costBasisAssets,
+//         pnl, roi,
+//     };
+// }
+
+async function calcVaultPosition(vault: VaultCfg, wallet: string, blockTag: number) {
     const rpc = vault.rpc;
     const provider = getProvider(rpc);
     const erc4626 = new ethers.Contract(vault.address, ERC4626_ABI, provider);
 
-    // Underlying asset metadata
+    // Underlying asset metadata (can be unpinned; or pin if you prefer)
     const assetAddr: string = await safeCall(rpc, () => erc4626.asset());
     const asset = new ethers.Contract(assetAddr, ERC20_ABI, provider);
     const [assetDecimals, assetSymbol] = await Promise.all([
@@ -204,49 +291,46 @@ async function calcVaultPosition(vault: VaultCfg, wallet: string) {
         safeCall(rpc, () => asset.symbol()),
     ]);
 
-    // Share decimals, wallet shares, current value
+    // Share decimals (unchanging), then **pinned** shares & assets at blockTag
     const shareDecimals = await safeCall(rpc, () => erc4626.decimals()).then(Number);
-    const walletShares: bigint = await safeCall(rpc, () => erc4626.balanceOf(wallet));
-    const currentAssets: bigint = await safeCall(rpc, () => erc4626.convertToAssets(walletShares));
+    const { shares: walletShares, assets: currentAssets } =
+        await readSharesAndAssetsAtBlock(vault.address, wallet, blockTag, rpc);
 
-    // Cost basis: prefer receipts → fallback paths
+    // Cost basis (receipts already value at their own rcpt.blockNumber — keep as-is)
     let costBasisAssets: bigint = 0n;
     try {
         const fromReceipts = await costBasisFromReceipts(vault, wallet);
-        if (fromReceipts > 0n) {
-            costBasisAssets = fromReceipts;
-        } else {
-            costBasisAssets = await fallbackCostBasis(vault, assetDecimals);
-        }
-    } catch (e) {
-        console.warn(`[WARN] Cost basis via receipts failed for ${vault.address} on ${rpc}: ${(e as any)?.message ?? e}`);
+        costBasisAssets = fromReceipts > 0n ? fromReceipts : await fallbackCostBasis(vault, assetDecimals);
+    } catch {
         costBasisAssets = await fallbackCostBasis(vault, assetDecimals);
     }
 
     const pnl = currentAssets - costBasisAssets;
     const roi = costBasisAssets > 0n ? Number(pnl) / Number(costBasisAssets) : 0;
 
-    return {
-        assetSymbol, assetDecimals,
-        shareDecimals,
-        walletShares, currentAssets,
-        costBasisAssets,
-        pnl, roi,
-    };
+    return { assetSymbol, assetDecimals, shareDecimals, walletShares, currentAssets, costBasisAssets, pnl, roi };
 }
+
+
 
 /* ===================== Strategy runner ===================== */
 async function trackStrategy(strategy: StrategyCfg) {
     console.log(`\n=== ${strategy.name} ===`);
+    const uniqueRpcs = Array.from(new Set(strategy.vaults.map(v => v.rpc)));
+    const pinnedBlockByRpc: Record<string, number> = {};
+    for (const rpc of uniqueRpcs) {
+        pinnedBlockByRpc[rpc] = await safeCall(rpc, () => getProvider(rpc).getBlockNumber());
+    }
 
     type Totals = { deposit: bigint; value: bigint; pnl: bigint; assetDecimals: number; assetSymbol: string; };
     const totalsByAsset: Record<string, Totals> = {};
 
     for (const v of strategy.vaults) {
         await sleep(350); // avoid bursty calls per provider
-        const r = await calcVaultPosition(v, strategy.wallet);
+        const r = await calcVaultPosition(v, strategy.wallet, pinnedBlockByRpc[v.rpc]);
 
         console.log(`\n[${v.name}]`);
+
         if (r.costBasisAssets === 0n) {
             console.log(`Deposit: (unknown / not provided)`);
         } else {

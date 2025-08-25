@@ -5,3 +5,5 @@
 .env
 .cursorignore
 structure.txt
+cancelpending.ts
+test.ts
