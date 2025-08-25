@@ -4,16 +4,26 @@ import { runStrategy } from '../strategies/index';
 
 dotenv.config();
 
+// const TARGET_VAULT_IDS = [
+//     "0x2105_e072ad15-4705-4a3f-9ed6-4a86fe6eb72f",
+//     "0x2105_f03ea9e8-b17a-46f2-8a02-ff8486f939d2",
+//     "0x2105_7372edda-f07f-4598-83e5-4edec48c4039",
+//     "0x2105_8c2b9daa-063d-4c36-a41a-13ef82d99c47",
+//     "0x2105_1643c124-f047-4fc5-9642-d6fa91875184",
+//     "0xa4b1_2d75a8dd-f4bd-4ed9-a006-445df75be02c",
+//     "0xa4b1_4c45cc9e-e1a4-43c9-8a3d-687d96abb07c",
+// ];
 const TARGET_VAULT_IDS = [
-    "0x2105_e072ad15-4705-4a3f-9ed6-4a86fe6eb72f",
-    "0x2105_f03ea9e8-b17a-46f2-8a02-ff8486f939d2",
-    "0x2105_7372edda-f07f-4598-83e5-4edec48c4039",
-    "0x2105_8c2b9daa-063d-4c36-a41a-13ef82d99c47",
-    "0x2105_1643c124-f047-4fc5-9642-d6fa91875184",
-    "0xa4b1_2d75a8dd-f4bd-4ed9-a006-445df75be02c",
-    "0xa4b1_4c45cc9e-e1a4-43c9-8a3d-687d96abb07c"
-];
+    "wasabi_base_usdc",
+    "tokemak_base_usdc_baseusd",
+    "fluid-lending_base_usdc",
+    "maxapy_base_usdc",
+    "morpho-blue_base_mwusdc",
+    "silo-v2_arbitrum_usdc_127",
+    "fluid-lending_arbitrum_usdc",
+    "wasabi_solana_usdc",
 
+]
 function formatNumber(value: number | undefined, decimals = 2): string {
     if (value === undefined || value === null) return 'N/A';
     return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
@@ -71,7 +81,7 @@ function debugVaultData(vaults: any[]) {
     });
 }
 
-function displayStrategyAllocations(vaults: any[], strategies: string[] = ['S1', 'S2', 'S5']) {
+function displayStrategyAllocations(vaults: any[], strategies: string[] = ['S1', 'S2']) {
     console.log('\n🎯 === STRATEGY ALLOCATIONS COMPARISON ===');
 
     // Debug vault data first
@@ -81,7 +91,7 @@ function displayStrategyAllocations(vaults: any[], strategies: string[] = ['S1',
     const strategyNames = {
         'S1': 'Strategy 1 (Top-K Equal Weight)',
         'S2': 'Strategy 2 (Risk-Adjusted)',
-        'S5': 'Strategy 3 (Advanced Optimization)'
+        // 'S5': 'Strategy 3 (Advanced Optimization)'
     };
 
     // Run all strategies
@@ -89,7 +99,7 @@ function displayStrategyAllocations(vaults: any[], strategies: string[] = ['S1',
         try {
             console.log(`\n📊 === Running ${strategyNames[strategy as keyof typeof strategyNames]} ===`);
 
-            const allocation = runStrategy(strategy as 'S1' | 'S2' | 'S5', vaults);
+            const allocation = runStrategy(strategy as 'S1' | 'S2', vaults);
 
             console.log(`🔍 Raw allocation result:`, allocation);
             console.log(`🔍 Number of allocated vaults: ${Object.keys(allocation).length}`);

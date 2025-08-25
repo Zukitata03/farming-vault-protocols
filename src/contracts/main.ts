@@ -20,7 +20,7 @@ const ctx = {
 const main = async () => {
     const userAddr = getAddressFromMnemonicEthers(ctx);
     console.log("Using wallet:", userAddr);
-    // const calls = await protocols.morpho.deposit("morpho:USDC", parseUnits("0.01", 6), userAddr);
+    const calls = await protocols.morpho.deposit("morpho:USDC", parseUnits("0.01", 6), userAddr);
     // await executeCallsEthers(ctx, calls)
     // await swap("usdc", "usdt", "0.1", {
     //     network: "arbitrum",

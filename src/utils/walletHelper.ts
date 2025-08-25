@@ -7,6 +7,7 @@ export function getProvider(rpcUrl: string) {
   return new ethers.JsonRpcProvider(rpcUrl);
 }
 
+import { clientByChain } from "./transport";
 // Helper to create a wallet (with privateKey and provider)
 export function getWallet(mnemonic: string, provider: ethers.JsonRpcProvider) {
   return ethers.Wallet.fromPhrase(mnemonic).connect(provider);
@@ -34,44 +35,53 @@ export async function getShareTokenBalance(
   walletAddress: string,
   chain: string,
 ): Promise<bigint> {
-  const rpcUrl = CHAIN_RPC[chain];
-  const provider = getProvider(rpcUrl);
-  const shareTokenContract = new ethers.Contract(shareTokenAddress, erc20Abi, provider);
-  const balance = await shareTokenContract.balanceOf(walletAddress);
-  return balance;
+  const client = (clientByChain as any)[chain];
+  return await client.readContract({
+    address: shareTokenAddress as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [walletAddress as `0x${string}`],
+  }) as bigint;
 }
+
 export async function getAllowance(
   tokenAddress: string,
   spenderAddress: string,
   walletAddress: string,
   chain: string,
 ): Promise<bigint> {
-  const rpcUrl = CHAIN_RPC[chain];
-  const provider = getProvider(rpcUrl);
-  console.log(provider);
-  const tokenContract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-  const allowance = await tokenContract.allowance(walletAddress, spenderAddress);
-  return allowance;
+  const client = (clientByChain as any)[chain];
+  return await client.readContract({
+    address: tokenAddress as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [walletAddress as `0x${string}`, spenderAddress as `0x${string}`],
+  }) as bigint;
 }
 export async function previewWithdraw(
   shareTokenAddress: string,
   assets: bigint,
   chain: string,
 ): Promise<bigint> {
-  const rpcUrl = CHAIN_RPC[chain];
-  const provider = getProvider(rpcUrl);
+  const client = (clientByChain as any)[chain];
 
   // Try ERC20 ABI first (in case it's a regular token with custom preview functions)
   try {
-    const shareTokenContract = new ethers.Contract(shareTokenAddress, erc20Abi, provider);
-    const shares = await shareTokenContract.previewWithdraw(assets);
-    return shares;
+    return await client.readContract({
+      address: shareTokenAddress as `0x${string}`,
+      abi: erc20Abi,
+      functionName: "previewWithdraw",
+      args: [assets],
+    }) as bigint;
   } catch (error) {
     console.log("ERC20 previewWithdraw failed, trying ERC4626...");
     // Fallback to ERC4626 ABI
-    const shareTokenContract = new ethers.Contract(shareTokenAddress, erc4626Abi, provider);
-    const shares = await shareTokenContract.previewWithdraw(assets);
-    return shares;
+    return await client.readContract({
+      address: shareTokenAddress as `0x${string}`,
+      abi: erc4626Abi,
+      functionName: "previewWithdraw",
+      args: [assets],
+    }) as bigint;
   }
 }
 
@@ -80,20 +90,25 @@ export async function previewDeposit(
   amount: bigint,
   chain: string,
 ): Promise<bigint> {
-  const rpcUrl = CHAIN_RPC[chain];
-  const provider = getProvider(rpcUrl);
+  const client = (clientByChain as any)[chain];
 
   // Try ERC20 ABI first (in case it's a regular token with custom preview functions)
   try {
-    const shareTokenContract = new ethers.Contract(shareTokenAddress, erc20Abi, provider);
-    const balance = await shareTokenContract.previewDeposit(amount);
-    return balance;
+    return await client.readContract({
+      address: shareTokenAddress as `0x${string}`,
+      abi: erc20Abi,
+      functionName: "previewDeposit",
+      args: [amount],
+    }) as bigint;
   } catch (error) {
     console.log("ERC20 previewDeposit failed, trying ERC4626...");
     // Fallback to ERC4626 ABI
-    const shareTokenContract = new ethers.Contract(shareTokenAddress, erc4626Abi, provider);
-    const balance = await shareTokenContract.previewDeposit(amount);
-    return balance;
+    return await client.readContract({
+      address: shareTokenAddress as `0x${string}`,
+      abi: erc4626Abi,
+      functionName: "previewDeposit",
+      args: [amount],
+    }) as bigint;
   }
 }
 

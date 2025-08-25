@@ -7,3 +7,5 @@
 structure.txt
 cancelpending.ts
 test.ts
+src/contracts/testdryrun.ts
+src/contracts/dryrun.ts

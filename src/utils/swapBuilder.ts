@@ -9,7 +9,7 @@ import { buildCall } from './callBuilder';
 
 // Build a Uniswap swap (EXACT_INPUT) and return one raw call to the router
 export async function buildSorSwapCall(params: {
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.JsonRpcProvider;
     chainId: number;         // 8453 base, 42161 arb
     tokenIn: { address: Address; decimals: number };
     tokenOut: { address: Address; decimals: number };
@@ -59,7 +59,7 @@ export async function buildSorSwapCall(params: {
 
 // Build a Uniswap swap with approval check - returns approval call (if needed) and swap call
 export async function buildSorSwapCallWithApproval(params: {
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.JsonRpcProvider;
     chainId: number;         // 8453 base, 42161 arb
     tokenIn: { address: Address; decimals: number };
     tokenOut: { address: Address; decimals: number };

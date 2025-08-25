@@ -47,7 +47,8 @@ export function buildAllocationS1(vaults: VaultDoc[], params: StrategyParams): A
 
     const scores: Array<[string, number]> = cands.map(v => {
         const apy = v.apy ?? 0;
-        const net = apy - (v.managementFee / 100) - (v.performanceFee / 100);
+        // const net = apy - (v.managementFee / 100) - (v.performanceFee / 100);
+        const net = apy;
         return [v._id, net];
     });
 
