@@ -37,7 +37,7 @@ import nacl from "tweetnacl";
 const API_KEY = process.env.SKIP_API_KEY || ""; // optional; only needed if your Skip instance requires it
 // if (API_KEY) setApiOptions({ apiKey: API_KEY });
 
-const MNEMONIC = process.env.MNEMONIC_BASE || "";
+const MNEMONIC = process.env.MNEMONIC_BASE || process.env.MNEMONIC_ARBITRUM || process.env.MNEMONIC_SOLANA || process.env.MNEMONIC || "";
 if (!MNEMONIC && typeof window === "undefined") {
     throw new Error("Set MNEMONIC_BASE in env when running in Node");
 }

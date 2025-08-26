@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, HDNodeWallet, Mnemonic } from "ethers";
 import type { ContractCall } from "../types/protocol";
 import { NETWORKS } from "../../config";
 import dotenv from "dotenv";
@@ -7,13 +7,14 @@ import { CHAIN_RPC, getProvider, getWallet } from "../utils/walletHelper";
 export interface ExecContext {
     network: keyof typeof CHAIN_RPC; // e.g. "base" or "arbitrum"
     mnemonic: string;
+    derivationPath?: string;
 }
 
-
 export async function executeCallsEthers(ctx: ExecContext, calls: ContractCall[]) {
-    // Create provider & wallet from your helper
     const provider = getProvider(CHAIN_RPC[ctx.network]);
-    const wallet = getWallet(ctx.mnemonic, provider);
+    const wallet = ctx.derivationPath
+        ? HDNodeWallet.fromMnemonic(Mnemonic.fromPhrase(ctx.mnemonic), ctx.derivationPath).connect(provider)
+        : getWallet(ctx.mnemonic, provider);
 
     const receipts: ethers.TransactionReceipt[] = [];
 

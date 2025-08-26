@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import type { ContractCall, Protocol, Vault } from "../types/protocol";
-import { TOKEMAK_ABI } from "../utils/abis";
+import { TOKEMAK_ABI, TOKEMAK_ROUTER_ABI } from "../utils/abis";
 import { vaults } from "../registry/vault.base";
 import { encodeFunctionData } from "viem";
 import { buildCall } from "../utils/callBuilder";
@@ -56,17 +56,32 @@ const Tokemak: Protocol = {
 
     async withdraw(vaultId, shares, wallet) {
         const v = this.getVault(vaultId);
+        console.log("withdraw", shares);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
         if (shares > shareTokenBalance) {
             shares = shareTokenBalance;
         }
-
-        // const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [v.router, shares] });
-        // const reqRedeemData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "requestRedeem", args: [shares, wallet as `0x${string}`, wallet as `0x${string}`] });
-
-        return [
-            buildCall(v.share, TOKEMAK_ABI, "redeem(uint256,address,address,uint8)", [shares, wallet as `0x${string}`, wallet as `0x${string}`, 1]),
-        ];
+        // const calls = [];
+        // const approveCall = encodeFunctionData({ abi: TOKEMAK_ROUTER_ABI, functionName: "approve", args: [v.share, v.router, shares] });
+        // // console.log("shares", shares);
+        // // const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [v.router, shares] });
+        // // const reqRedeemData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "requestRedeem", args: [shares, wallet as `0x${string}`, wallet as `0x${string}`] });
+        // const redeemCall = encodeFunctionData({ abi: TOKEMAK_ROUTER_ABI, functionName: "redeem", args: [v.vault as `0x${string}`, wallet as `0x${string}`, shares, 1n] });
+        // calls.push(buildCall(v.router, TOKEMAK_ROUTER_ABI, "multicall", [[approveCall, redeemCall]]));
+        // return calls;
+        const approve = buildCall(
+            v.share as `0x${string}`,
+            erc20Abi as any,
+            "approve",
+            [v.router as `0x${string}`, shares]
+        );
+        const redeem = buildCall(
+            v.vault as `0x${string}`,
+            TOKEMAK_ROUTER_ABI as any,
+            "redeem",
+            [v.share as `0x${string}`, wallet as `0x${string}`, shares, 1n]
+        );
+        return [approve, redeem];
     },
 }
 

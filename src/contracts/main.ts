@@ -9,19 +9,22 @@ import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { parseUnits } from "viem";
 import { buildSorSwapCall, buildSorSwapCallWithApproval } from "../utils/swapBuilder";
-import { ethers } from 'ethers';
+import { ethers, HDNodeWallet, Mnemonic } from 'ethers';
 import { bridgeUSDC } from "./bridge";
 import { swap } from "./aggregatedSwap";
 const ctx = {
     network: "base" as const,
-    mnemonic: process.env.MNEMONIC_BASE!,
+    mnemonic: process.env.MNEMONIC_ARB!,
+    derivationPath: "m/44'/60'/0'/0/1"
 };
 
 const main = async () => {
-    const userAddr = getAddressFromMnemonicEthers(ctx);
+    // const userAddr = getAddressFromMnemonicEthers(ctx);
+    const userAddr = HDNodeWallet.fromMnemonic(Mnemonic.fromPhrase(process.env.MNEMONIC_ARB!), "m/44'/60'/0'/0/1").address;
     console.log("Using wallet:", userAddr);
-    const calls = await protocols.morpho.deposit("morpho:USDC", parseUnits("0.01", 6), userAddr);
-    // await executeCallsEthers(ctx, calls)
+    const calls = await protocols.tokemak.withdraw("tokemak:USDC", parseUnits("26.899125", 18), userAddr);
+    console.log(calls);
+    await executeCallsEthers(ctx, calls)
     // await swap("usdc", "usdt", "0.1", {
     //     network: "arbitrum",
     //     slippage: 5,                 // optional (0.30%)
