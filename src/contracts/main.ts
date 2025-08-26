@@ -15,7 +15,7 @@ import { swap } from "./aggregatedSwap";
 const ctx = {
     network: "base" as const,
     mnemonic: process.env.MNEMONIC_ARB!,
-    derivationPath: "m/44'/60'/0'/0/1"
+    derivationPath: "m/44'/60'/0'/0/0"
 };
 
 const main = async () => {

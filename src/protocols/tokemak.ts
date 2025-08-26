@@ -7,6 +7,7 @@ import { buildCall } from "../utils/callBuilder";
 import { erc20Abi, maxUint256 } from "viem";
 import { getAllowance, getShareTokenBalance } from "../utils/walletHelper";
 import { previewDeposit } from "../utils/walletHelper";
+import { coerceShareAmount, coerceDepositAmount } from "../utils/amount";
 
 const Tokemak: Protocol = {
     key: "tokemak",
@@ -35,14 +36,15 @@ const Tokemak: Protocol = {
         //     console.log("approving max uint256");
         //     approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, maxUint256]);
         // }
+        const amountIn = coerceDepositAmount(vaultId, amount);
         const slippageBps = 50;
         const BPS = 10000n;
-        const exptectedShares = await previewDeposit(v.share, amount, this.chain);
+        const exptectedShares = await previewDeposit(v.share, amountIn, this.chain);
         const MIN_SHARES_OUT = exptectedShares * (BPS - BigInt(slippageBps)) / BPS;
         console.log("MIN_SHARES_OUT", MIN_SHARES_OUT);
-        const pullToken = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "pullToken", args: [v.depositToken, amount, v.router] });
-        const approval = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "approve", args: [v.depositToken, v.share, amount] });
-        const depData = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "deposit", args: [v.share, wallet as `0x${string}`, amount, MIN_SHARES_OUT] });
+        const pullToken = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "pullToken", args: [v.depositToken, amountIn, v.router] });
+        const approval = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "approve", args: [v.depositToken, v.share, amountIn] });
+        const depData = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "deposit", args: [v.share, wallet as `0x${string}`, amountIn, MIN_SHARES_OUT] });
 
         // Only include approveCall if it's defined
         const calls = [];
@@ -56,10 +58,10 @@ const Tokemak: Protocol = {
 
     async withdraw(vaultId, shares, wallet) {
         const v = this.getVault(vaultId);
-        console.log("withdraw", shares);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
-        if (shares > shareTokenBalance) {
-            shares = shareTokenBalance;
+        let sharesIn = coerceShareAmount(vaultId, shares);
+        if (sharesIn > shareTokenBalance) {
+            sharesIn = shareTokenBalance;
         }
         // const calls = [];
         // const approveCall = encodeFunctionData({ abi: TOKEMAK_ROUTER_ABI, functionName: "approve", args: [v.share, v.router, shares] });
@@ -73,13 +75,13 @@ const Tokemak: Protocol = {
             v.share as `0x${string}`,
             erc20Abi as any,
             "approve",
-            [v.router as `0x${string}`, shares]
+            [v.router as `0x${string}`, sharesIn]
         );
         const redeem = buildCall(
             v.vault as `0x${string}`,
             TOKEMAK_ROUTER_ABI as any,
             "redeem",
-            [v.share as `0x${string}`, wallet as `0x${string}`, shares, 1n]
+            [v.share as `0x${string}`, wallet as `0x${string}`, sharesIn, 1n]
         );
         return [approve, redeem];
     },

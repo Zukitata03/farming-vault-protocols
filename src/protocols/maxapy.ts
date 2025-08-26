@@ -7,6 +7,7 @@ import { encodeFunctionData } from "viem";
 import { buildCall } from "../utils/callBuilder";
 import { erc20Abi } from "viem";
 import { getShareTokenBalance } from "../utils/walletHelper";
+import { coerceDepositAmount, coerceShareAmount } from "../utils/amount";
 
 const Maxapy: Protocol = {
     key: "maxapy",
@@ -27,10 +28,10 @@ const Maxapy: Protocol = {
 
     async deposit(vaultId, amount, wallet) {
         const v = this.getVault(vaultId);
-
-        const approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, amount]);
-        const reqDepData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "requestDeposit", args: [amount, wallet as `0x${string}`, wallet as `0x${string}`] });
-        const depData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "deposit", args: [amount, wallet as `0x${string}`] });
+        const amountIn = coerceDepositAmount(vaultId, amount);
+        const approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, amountIn]);
+        const reqDepData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "requestDeposit", args: [amountIn, wallet as `0x${string}`, wallet as `0x${string}`] });
+        const depData = encodeFunctionData({ abi: MAXAPY_ABI, functionName: "deposit", args: [amountIn, wallet as `0x${string}`] });
 
         return [
             approveCall, buildCall(v.router, MAXAPY_ABI, "multicall", [[reqDepData, depData]]),
@@ -40,8 +41,9 @@ const Maxapy: Protocol = {
     async withdraw(vaultId, shares, wallet) {
         const v = this.getVault(vaultId);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
-        if (shares > shareTokenBalance) {
-            shares = shareTokenBalance;
+        let sharesIn = coerceShareAmount(vaultId, shares);
+        if (sharesIn > shareTokenBalance) {
+            sharesIn = shareTokenBalance;
         }
 
         // const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [v.router, shares] });

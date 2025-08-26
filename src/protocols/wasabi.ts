@@ -5,7 +5,7 @@ import { buildCall } from "../utils/callBuilder";
 import { erc20Abi, maxUint256 } from "viem";
 import { getAllowance, getShareTokenBalance } from "../utils/walletHelper";
 import { WASABI_ABI } from "../utils/abis";
-
+import { coerceShareAmount, coerceDepositAmount } from "../utils/amount";
 
 const Wasabi: Protocol = {
     key: "wasabi",
@@ -33,7 +33,8 @@ const Wasabi: Protocol = {
             calls.push(buildCall(v.depositToken, erc20Abi, "approve", [v.vault, maxUint256]));
         }
 
-        calls.push(buildCall(v.vault, WASABI_ABI, "deposit", [assets, wallet]));
+        const amountIn = coerceDepositAmount(vaultId, assets);
+        calls.push(buildCall(v.vault, WASABI_ABI, "deposit", [amountIn, wallet]));
         return calls;
     },
 

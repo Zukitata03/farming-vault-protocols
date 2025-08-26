@@ -7,6 +7,7 @@ import { encodeFunctionData } from "viem";
 import { buildCall } from "../utils/callBuilder";
 import { erc20Abi, maxUint256 } from "viem";
 import { getAllowance, getShareTokenBalance } from "../utils/walletHelper";
+import { coerceDepositAmount, coerceShareAmount } from "../utils/amount";
 
 const Silo: Protocol = {
     key: "silo",
@@ -29,16 +30,17 @@ const Silo: Protocol = {
         const v = this.getVault(vaultId);
         const allowance = await getAllowance(v.depositToken, v.router, wallet, this.chain);
         console.log("allowance", allowance);
+        const amountIn = coerceDepositAmount(vaultId, amount);
         let approveCall: ContractCall | undefined;
         console.log("amount type", typeof amount);
         console.log("allowance type", typeof allowance);
-        if (amount > allowance) {
+        if (amountIn > allowance) {
             console.log("approving max uint256");
             approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, maxUint256]);
         }
-        const transferFrom = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "transferFrom", args: [v.depositToken, v.router, amount] });
-        const approval = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "approve", args: [v.depositToken, v.share, amount] });
-        const depData = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "deposit", args: [v.share, amount, 1] });
+        const transferFrom = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "transferFrom", args: [v.depositToken, v.router, amountIn] });
+        const approval = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "approve", args: [v.depositToken, v.share, amountIn] });
+        const depData = encodeFunctionData({ abi: SILO_ABI_IMPLEMENTATION, functionName: "deposit", args: [v.share, amountIn, 1] });
 
         // Only include approveCall if it's defined
         const calls = [];
@@ -53,8 +55,9 @@ const Silo: Protocol = {
     async withdraw(vaultId, shares, wallet) {
         const v = this.getVault(vaultId);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
-        if (shares > shareTokenBalance) {
-            shares = shareTokenBalance;
+        let sharesIn = coerceShareAmount(vaultId, shares);
+        if (sharesIn > shareTokenBalance) {
+            sharesIn = shareTokenBalance;
         }
 
         // const approveData = encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [v.router, shares] });

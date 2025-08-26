@@ -14,8 +14,8 @@ export interface Protocol {
   key: string;
   chain: string;
   getVault(vaultId: string): Vault;
-  deposit(vaultId: string, amount: bigint, wallet: string): Promise<ContractCall[]>;
-  withdraw(vaultId: string, shares: bigint, wallet: string): Promise<ContractCall[]>;
+  deposit(vaultId: string, amount: bigint | string, wallet: string): Promise<ContractCall[]>;
+  withdraw(vaultId: string, shares: bigint | string, wallet: string): Promise<ContractCall[]>;
   claim?(vaultId: string, wallet: string): Promise<ContractCall[]>;
 }
 

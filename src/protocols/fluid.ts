@@ -5,7 +5,7 @@ import { maxUint256, erc20Abi } from "viem";
 import { buildCall } from "../utils/callBuilder";
 import { getAllowance } from "../utils/walletHelper";
 import { FLUID_ABI } from "../utils/abis";
-
+import { coerceDepositAmount, coerceShareAmount } from "../utils/amount";
 const Fluid: Protocol = {
     key: "fluid",
     chain: "multi", // Supports multiple chains
@@ -30,19 +30,20 @@ const Fluid: Protocol = {
         const chain = vaultConfig.chain;
 
         const calls: ContractCall[] = [];
-
+        const amountIn = coerceDepositAmount(vaultId, assets);
         const allowance = await getAllowance(v.depositToken, v.vault!, wallet, chain);
-        if (assets > allowance) {
+        if (amountIn > allowance) {
             calls.push(buildCall(v.depositToken, erc20Abi, "approve", [v.vault, maxUint256]));
         }
 
-        calls.push(buildCall(v.vault!, FLUID_ABI, "deposit", [assets, wallet]));
+        calls.push(buildCall(v.vault!, FLUID_ABI, "deposit", [amountIn, wallet]));
         return calls;
     },
 
     async withdraw(vaultId: string, assets: bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
-        return [buildCall(v.vault!, FLUID_ABI, "withdraw", [assets, wallet])];
+        const amountIn = coerceShareAmount(vaultId, assets);
+        return [buildCall(v.vault!, FLUID_ABI, "withdraw", [amountIn, wallet])];
     },
 }
 
