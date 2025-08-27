@@ -22,6 +22,7 @@ const TARGET_VAULT_IDS = [
     "silo-v2_arbitrum_usdc_127",
     "fluid-lending_arbitrum_usdc",
     "wasabi_solana_usdc",
+    "kamino-lend_solana_usdc"
 
 ]
 function formatNumber(value: number | undefined, decimals = 2): string {

@@ -59,7 +59,18 @@ export function buildAllocationS1(vaults: VaultDoc[], params: StrategyParams): A
         return out;
     }
 
-    const per = cfg.dynamicPoolShare / top.length;
-    for (const id of top) out[id] = per;
-    return out; // sums to 1.0
+    const precision = 1e-4; // 0.01% increments
+    const perExact = cfg.dynamicPoolShare / top.length;
+
+    let allocated = 0;
+    for (let i = 0; i < top.length; i++) {
+        if (i < top.length - 1) {
+            const share = Math.floor(perExact / precision) * precision;
+            out[top[i]] = Number(share.toFixed(4));
+            allocated += out[top[i]];
+        } else {
+            out[top[i]] = Number((cfg.dynamicPoolShare - allocated).toFixed(4));
+        }
+    }
+    return out; // sums to cfg.fixedSafeShare + cfg.dynamicPoolShare
 }
