@@ -52,7 +52,7 @@ const STRATEGIES: StrategyCfg[] = [
         wallet: "0x0Be1c76f6B075EdC0E3Dfb99D012fC0CE9206f55",
         vaults: [
             { name: "wasabi", rpc: "https://mainnet.base.org", address: "0x1C4a802FD6B591BB71dAA01D8335e43719048B24", txs: ["0xe0e7cb2e33b3274bd9e3a2a9b873264a7ccf073031af1f01a27c5ab1f6d1185b"] },
-            { name: "tokemak", rpc: "https://mainnet.base.org", address: "0x9c6864105AEC23388C89600046213a44C384c831", txs: ["0x5113055b0e6bb3f602778b85829c9e280651717ec3f2fcb5cde70ca97f2cac70"] },
+            // { name: "tokemak", rpc: "https://mainnet.base.org", address: "0x9c6864105AEC23388C89600046213a44C384c831", txs: ["0x5113055b0e6bb3f602778b85829c9e280651717ec3f2fcb5cde70ca97f2cac70"] },
             { name: "maxapy", rpc: "https://mainnet.base.org", address: "0x7a63e8FC1d0A5E9BE52f05817E8C49D9e2d6efAe", txs: ["0x92463ac7b89f7eab66ab141de16da0edac1b93e16e883d38e3d6df170fa82876"] },
         ],
     },

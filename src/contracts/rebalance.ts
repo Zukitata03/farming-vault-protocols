@@ -71,7 +71,6 @@ function chainOf(vaultId: VaultId): Chain {
 function normalizeWeightsBps(weights: WeightsBps) {
     const tot = Object.values(weights).reduce((a, b) => a + b, 0);
     if (tot === 0) {
-        // Exit-only caller should have handled this branch already; keep zeros.
         return Object.fromEntries(Object.keys(weights).map(k => [k, 0])) as WeightsBps;
     }
     if (tot === 10000) return weights;
@@ -102,7 +101,6 @@ async function readAssetsUSDC(vaultId: VaultId, user: Address): Promise<bigint> 
 
     if (shares === 0n) return 0n;
 
-    // Prefer convertToAssets on the ERC-4626 (often the share token); fallback to vault; then naive scaling.
     const tryAddrs = Array.from(new Set([shareAddr, v.vault as `0x${string}`])).filter(Boolean) as `0x${string}`[];
     for (const addr of tryAddrs) {
         try {

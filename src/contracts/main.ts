@@ -22,9 +22,9 @@ const main = async () => {
     // const userAddr = getAddressFromMnemonicEthers(ctx);
     const userAddr = HDNodeWallet.fromMnemonic(Mnemonic.fromPhrase(process.env.MNEMONIC_ARB!), "m/44'/60'/0'/0/1").address;
     console.log("Using wallet:", userAddr);
-    const calls = await protocols.tokemak.withdraw("tokemak:USDC", parseUnits("26.899125", 18), userAddr);
+    const calls = await protocols.tokemak.deposit("tokemak:USDC", "26.899125", userAddr);
     console.log(calls);
-    await executeCallsEthers(ctx, calls)
+    // await executeCallsEthers(ctx, calls)
     // await swap("usdc", "usdt", "0.1", {
     //     network: "arbitrum",
     //     slippage: 5,                 // optional (0.30%)
