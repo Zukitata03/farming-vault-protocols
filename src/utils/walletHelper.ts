@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
 import { mainnet, arbitrum, base } from "viem/chains";
 import { createPublicClient, erc20Abi, erc4626Abi, http } from "viem";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 // import * as ethersV6 from 'ethers-v6';
 // Helper to create a provider (from your config or environment)
 export function getProvider(rpcUrl: string) {
@@ -48,6 +50,17 @@ export async function getUSDCBalance(
   walletAddress: string,
   chain: string,
 ): Promise<bigint> {
+  if (chain === "solana") {
+    const connection = new Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
+    const owner = new PublicKey(walletAddress);
+    const usdcMint = new PublicKey(process.env.SOLANA_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+    const ata = await getAssociatedTokenAddress(usdcMint, owner);
+    const info = await connection.getAccountInfo(ata);
+    if (!info) return 0n;
+    const bal = await connection.getTokenAccountBalance(ata);
+    return BigInt(bal.value.amount);
+  }
+
   const client = (clientByChain as any)[chain];
   const usdcAddress =
     chain === "arbitrum"
@@ -141,3 +154,5 @@ export async function previewDeposit(
 // export function getWallet(mnemonic: string, provider: ethers.providers.JsonRpcProvider) {
 //   return ethers.Wallet.fromMnemonic(mnemonic).connect(provider);
 // }
+
+// getUSDCBalance("3y8A3hEKsyRz5B4SxhFHu5Wk3EcnAemWXyqfyasKp7jN", "solana").then(console.log);
