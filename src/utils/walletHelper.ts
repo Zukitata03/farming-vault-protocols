@@ -8,6 +8,7 @@ export function getProvider(rpcUrl: string) {
 }
 
 import { clientByChain } from "./transport";
+import { TOKENS } from "../../config";
 // Helper to create a wallet (with privateKey and provider)
 export function getWallet(mnemonic: string, provider: ethers.JsonRpcProvider) {
   return ethers.Wallet.fromPhrase(mnemonic).connect(provider);
@@ -38,6 +39,25 @@ export async function getShareTokenBalance(
   const client = (clientByChain as any)[chain];
   return await client.readContract({
     address: shareTokenAddress as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [walletAddress as `0x${string}`],
+  }) as bigint;
+}
+export async function getUSDCBalance(
+  walletAddress: string,
+  chain: string,
+): Promise<bigint> {
+  const client = (clientByChain as any)[chain];
+  const usdcAddress =
+    chain === "arbitrum"
+      ? TOKENS.USDC_ARBITRUM.address
+      : chain === "base"
+        ? TOKENS.USDC.address
+        : (() => { throw new Error(`Unsupported chain for USDC: ${chain}`); })();
+
+  return await client.readContract({
+    address: usdcAddress as `0x${string}`,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [walletAddress as `0x${string}`],
