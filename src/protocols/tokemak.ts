@@ -36,7 +36,7 @@ const Tokemak: Protocol = {
         //     console.log("approving max uint256");
         //     approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, maxUint256]);
         // }
-        const amountIn = coerceDepositAmount(vaultId, amount);
+        const amountIn = coerceDepositAmount(vaultId, amount as string);
         const slippageBps = 50;
         const BPS = 10000n;
         const exptectedShares = await previewDeposit(v.share, amountIn, this.chain);
@@ -56,7 +56,7 @@ const Tokemak: Protocol = {
         return calls;
     },
 
-    async withdraw(vaultId, shares, wallet) {
+    async withdraw(vaultId: string, shares: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
         let sharesIn = coerceShareAmount(vaultId, shares);

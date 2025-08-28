@@ -24,12 +24,12 @@ const Wasabi: Protocol = {
         };
     },
 
-    async deposit(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async deposit(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const calls: ContractCall[] = [];
 
         const allowance = await getAllowance(v.depositToken, v.vault, wallet, this.chain);
-        if (assets > allowance) {
+        if (coerceDepositAmount(vaultId, assets as string) > allowance) {
             calls.push(buildCall(v.depositToken, erc20Abi, "approve", [v.vault, maxUint256]));
         }
 
@@ -39,7 +39,7 @@ const Wasabi: Protocol = {
     },
 
     // Withdraw by ASSETS (USDC). Internally the vault will burn shares.
-    async withdraw(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async withdraw(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         return [buildCall(v.vault, WASABI_ABI, "withdraw", [assets, wallet, wallet])];
     },

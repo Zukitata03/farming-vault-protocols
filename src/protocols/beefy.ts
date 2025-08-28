@@ -23,7 +23,7 @@ const Beefy: Protocol = {
         };
     },
 
-    async deposit(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async deposit(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const vaultConfig = (vaults as any)[vaultId];
         const chain = vaultConfig.chain;
@@ -39,7 +39,7 @@ const Beefy: Protocol = {
         return calls;
     },
 
-    async withdraw(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async withdraw(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const amountIn = coerceShareAmount(vaultId, assets);
         return [buildCall(v.vault!, BEEFY_ABI, "withdraw", [amountIn, wallet])];

@@ -91,7 +91,7 @@ function displayStrategyAllocations(vaults: any[], strategies: string[] = ['S1',
     const allocations: Record<string, Record<string, number>> = {};
     const strategyNames = {
         'S1': 'Strategy 1 (Top-K Equal Weight)',
-        'S2': 'Strategy 2 (Risk-Adjusted)',
+        // 'S2': 'Strategy 2 (Risk-Adjusted)',
         // 'S5': 'Strategy 3 (Advanced Optimization)'
     };
 

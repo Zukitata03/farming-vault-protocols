@@ -26,7 +26,7 @@ const Morpho: Protocol = {
         };
     },
 
-    async deposit(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async deposit(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const calls: ContractCall[] = [];
         const amountIn = coerceDepositAmount(vaultId, assets);
@@ -40,7 +40,7 @@ const Morpho: Protocol = {
     },
 
     // Withdraw by ASSETS (USDC). Internally the vault will burn shares.
-    async withdraw(vaultId: string, assets: bigint, wallet: `0x${string}`) {
+    async withdraw(vaultId: string, assets: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         // You can also call previewWithdrawAssets here and log it if you want.
         const amountIn = coerceShareAmount(vaultId, assets);

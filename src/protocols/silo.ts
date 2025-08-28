@@ -26,7 +26,7 @@ const Silo: Protocol = {
         };
     },
 
-    async deposit(vaultId, amount, wallet) {
+    async deposit(vaultId: string, amount: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const allowance = await getAllowance(v.depositToken, v.router, wallet, this.chain);
         console.log("allowance", allowance);
@@ -52,7 +52,7 @@ const Silo: Protocol = {
         return calls;
     },
 
-    async withdraw(vaultId, shares, wallet) {
+    async withdraw(vaultId: string, shares: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
         let sharesIn = coerceShareAmount(vaultId, shares);

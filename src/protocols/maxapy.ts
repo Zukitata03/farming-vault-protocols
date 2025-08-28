@@ -26,7 +26,7 @@ const Maxapy: Protocol = {
         };
     },
 
-    async deposit(vaultId, amount, wallet) {
+    async deposit(vaultId: string, amount: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const amountIn = coerceDepositAmount(vaultId, amount);
         const approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, amountIn]);
@@ -38,7 +38,7 @@ const Maxapy: Protocol = {
         ];
     },
 
-    async withdraw(vaultId, shares, wallet) {
+    async withdraw(vaultId: string, shares: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
         const shareTokenBalance = await getShareTokenBalance(v.share, wallet, this.chain);
         let sharesIn = coerceShareAmount(vaultId, shares);
