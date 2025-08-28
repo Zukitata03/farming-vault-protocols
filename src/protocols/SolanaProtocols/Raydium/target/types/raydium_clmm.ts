@@ -1240,6 +1240,142 @@ export type RaydiumClmm = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "swapV2",
+      "docs": [
+        "Swaps one token for as much as possible of another token across a single pool, support token program 2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `amount` - Arranged in pairs with other_amount_threshold. (amount_in, amount_out_minimum) or (amount_out, amount_in_maximum)",
+        "* `other_amount_threshold` - For slippage check",
+        "* `sqrt_price_limit` - The Q64.64 sqrt price √P limit. If zero for one, the price cannot",
+        "* `is_base_input` - swap base input or swap base output",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The user performing the swap"
+          ]
+        },
+        {
+          "name": "ammConfig",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The factory state to read protocol fees"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account of the pool in which the swap will be performed"
+          ]
+        },
+        {
+          "name": "inputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for input token"
+          ]
+        },
+        {
+          "name": "outputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for output token"
+          ]
+        },
+        {
+          "name": "inputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for input token"
+          ]
+        },
+        {
+          "name": "outputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for output token"
+          ]
+        },
+        {
+          "name": "observationState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account for the most recent oracle observation"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for token transfers"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program 2022 for token transfers"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "inputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "outputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "otherAmountThreshold",
+          "type": "u64"
+        },
+        {
+          "name": "sqrtPriceLimitX64",
+          "type": "u128"
+        },
+        {
+          "name": "isBaseInput",
+          "type": "bool"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -4214,6 +4350,142 @@ export const IDL: RaydiumClmm = {
         {
           "name": "amount1Min",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "swapV2",
+      "docs": [
+        "Swaps one token for as much as possible of another token across a single pool, support token program 2022",
+        "",
+        "# Arguments",
+        "",
+        "* `ctx` - The context of accounts",
+        "* `amount` - Arranged in pairs with other_amount_threshold. (amount_in, amount_out_minimum) or (amount_out, amount_in_maximum)",
+        "* `other_amount_threshold` - For slippage check",
+        "* `sqrt_price_limit` - The Q64.64 sqrt price √P limit. If zero for one, the price cannot",
+        "* `is_base_input` - swap base input or swap base output",
+        ""
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The user performing the swap"
+          ]
+        },
+        {
+          "name": "ammConfig",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The factory state to read protocol fees"
+          ]
+        },
+        {
+          "name": "poolState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account of the pool in which the swap will be performed"
+          ]
+        },
+        {
+          "name": "inputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for input token"
+          ]
+        },
+        {
+          "name": "outputTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The user token account for output token"
+          ]
+        },
+        {
+          "name": "inputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for input token"
+          ]
+        },
+        {
+          "name": "outputVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The vault token account for output token"
+          ]
+        },
+        {
+          "name": "observationState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The program account for the most recent oracle observation"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program for token transfers"
+          ]
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL program 2022 for token transfers"
+          ]
+        },
+        {
+          "name": "memoProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "inputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 0"
+          ]
+        },
+        {
+          "name": "outputVaultMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The mint of token vault 1"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "otherAmountThreshold",
+          "type": "u64"
+        },
+        {
+          "name": "sqrtPriceLimitX64",
+          "type": "u128"
+        },
+        {
+          "name": "isBaseInput",
+          "type": "bool"
         }
       ]
     }
