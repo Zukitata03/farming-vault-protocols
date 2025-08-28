@@ -24,6 +24,7 @@
     "@kamino-finance/klend-sdk": "^7.0.8",
     "@project-serum/anchor": "^0.26.0",
     "@solana/spl-memo": "^0.2.5",
-    "@types/bn.js": "^5.2.0"
+    "@types/bn.js": "^5.2.0",
+    "wasabi-solana-ts": "^1.2.0"
   }
 }

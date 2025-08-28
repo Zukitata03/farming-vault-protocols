@@ -9,3 +9,4 @@ cancelpending.ts
 test.ts
 src/contracts/testdryrun.ts
 src/contracts/dryrun.ts
+phantom-mainnet-keypair.json

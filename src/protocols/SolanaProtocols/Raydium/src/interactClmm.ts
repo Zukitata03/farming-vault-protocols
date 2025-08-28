@@ -2,6 +2,7 @@ import {Program, AnchorProvider} from "@project-serum/anchor";
 import {Connection, PublicKey} from "@solana/web3.js";
 import * as anchor from '@coral-xyz/anchor';
 import * as fs from 'fs';
+import Decimal from "decimal.js";
 
 import RaydiumClmmIdl from '../target/idl/raydium_clmm.json';
 import { RaydiumCLMM } from "./RaydiumClmm";
@@ -18,30 +19,20 @@ const clmmProgram = new Program(RaydiumClmmIdl as any, RaydiumClmmIdl.metadata.a
 const clmm = new RaydiumCLMM(
   clmmProgram, 
   provider, 
-  "USDC", // token0 symbol
-  "EURC", // token1 symbol
-  new PublicKey("733H2N9rpVrGYuqdWBFtz9f5xVabq7iWmwzW9HZc1wpZ"), // address of nft mint if exists, should be stored in database
+  "USDS", // token0 symbol
+  "USDC", // token1 symbol
+  // new PublicKey("733H2N9rpVrGYuqdWBFtz9f5xVabq7iWmwzW9HZc1wpZ"), // address of nft mint if exists, should be stored in database
 );
 
-async function openPosition(
-  tickLowerIndex: number,
-  tickUpperIndex: number,
-  tickArrayLowerStartIndex: number,
-  tickArrayUpperStartIndex: number,
-  liquidity: anchor.BN,
-  amount0Max: anchor.BN,
-  amount1Max: anchor.BN
+async function deposit(
+  amount0: Decimal,
+  amount1: Decimal
 ) {
   console.log("Should open position with nft");
-  const instructions = await clmm.openPositionWithToken22Nft(
-    tickLowerIndex, 
-    tickUpperIndex, 
-    tickArrayLowerStartIndex, 
-    tickArrayUpperStartIndex, 
-    liquidity, 
-    amount0Max, 
-    amount1Max
-  ); // eg: -14, 6, -60, 0, new anchor.BN(0), new anchor.BN(1000000), new anchor.BN(1500000)
+  const instructions = await clmm.deposit(
+    new Decimal(amount0),
+    new Decimal(amount1)
+  ); // eg: 3 USDS, 0.1 USDC
   const transaction = new anchor.web3.Transaction().add(...instructions);
   
   // Get recent blockhash
@@ -146,21 +137,16 @@ async function closePosition() {
 (async () => {
   console.log("Raydium CLMM Interaction");
   // add your logic here
-  // Example: Open a position
-  // await openPosition(
-  //   -14, // tickLowerIndex
-  //   6,   // tickUpperIndex
-  //   0,   // tickArrayLowerStartIndex
-  //   1,   // tickArrayUpperStartIndex
-  //   new anchor.BN(1000000), // liquidity
-  //   new anchor.BN(1500000), // amount0Max
-  //   new anchor.BN(2000000)  // amount1Max
+  // Example: Deposit
+  // await deposit(
+  //   new Decimal(3000000),  // amount0
+  //   new Decimal(100000)  // amount1
   // )
 
   await decreaseLiquidity(
-    new anchor.BN(58924375),
-    new anchor.BN(17740),
-    new anchor.BN(39339)
+    new anchor.BN(200000000),
+    new anchor.BN(0),
+    new anchor.BN(0)
   )
 })().catch(err => {
   console.error("Error during CLMM interaction:", err);
