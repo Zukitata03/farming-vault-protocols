@@ -5,21 +5,21 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MAINNET_RPC_URL = process.env.SOLANA_RPC_URL ? process.env.SOLANA_RPC_URL : "https://api.mainnet-beta.solana.com";
+const MAINNET_RPC_URL = process.env.SOLANA_RPC_URL ? process.env.SOLANA_RPC_URL : "https://solana-mainnet.g.alchemy.com/v2/zJJW_aLX9rkL88RgCuiRPHxjR-70jyBz";
 
 interface UserLoansArgs {
-    /**
-     * web3 connection to your RPC
-     */
-    rpc: Rpc<SolanaRpcApiMainnet>;
-    /**
-     * Public Key of the Kamino Market (e.g. main market pubkey: 7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF)
-     */
-    marketPubkey: Address;
-    /**
-     * User's wallet public key
-     */
-    wallet: Address;
+  /**
+   * web3 connection to your RPC
+   */
+  rpc: Rpc<SolanaRpcApiMainnet>;
+  /**
+   * Public Key of the Kamino Market (e.g. main market pubkey: 7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF)
+   */
+  marketPubkey: Address;
+  /**
+   * User's wallet public key
+   */
+  wallet: Address;
 }
 
 interface MarketArgs {
@@ -42,7 +42,7 @@ async function getMarket({ rpc, marketPubkey }: MarketArgs) {
   return market;
 }
 
-function initRpc(rpcUrl: string = MAINNET_RPC_URL): Rpc<SolanaRpcApiMainnet> {
+export function initRpc(rpcUrl: string = MAINNET_RPC_URL): Rpc<SolanaRpcApiMainnet> {
   const api = createSolanaRpcApi<SolanaRpcApiMainnet>({
     ...DEFAULT_RPC_CONFIG,
     defaultCommitment: 'confirmed',
@@ -59,11 +59,11 @@ export async function getUserLoansForMarket(args: UserLoansArgs) {
   return market.getAllUserObligations(args.wallet);
 }
 
-async function getUserObligations (market: string, wallet: string) {
+async function getUserObligations(market: string, wallet: string) {
   console.time("fetching loans");
   const marketAddress = markets.get(market);
   if (!marketAddress) {
-      throw new Error(`Market address for "${market}" not found`);
+    throw new Error(`Market address for "${market}" not found`);
   }
   const marketPubkey = address(marketAddress.toString());
   const rpc = initRpc();
@@ -71,7 +71,7 @@ async function getUserObligations (market: string, wallet: string) {
   console.log(`fetching all loans for wallet ${wallet.toString()}`);
   const loans = await getUserLoansForMarket({ rpc, marketPubkey, wallet: walletPubkey });
   for (const loan of loans) {
-      console.log(
+    console.log(
       'loan:',
       loan.obligationAddress.toString(),
       'type:',
@@ -82,7 +82,7 @@ async function getUserObligations (market: string, wallet: string) {
       loan.getDepositedValue().toNumber(),
       'net value:',
       loan.getNetAccountValue().toNumber()
-      );
+    );
   }
   console.timeEnd("fetching loans");
 }

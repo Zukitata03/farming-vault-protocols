@@ -1,5 +1,5 @@
 import protocols from "../protocols/index";
-import { CHAIN_RPC, getProvider, getWallet } from "../utils/walletHelper";
+import { CHAIN_RPC, getProvider, getShareTokenBalance, getWallet } from "../utils/walletHelper";
 // import { performAction } from "./contractInteractor";
 import { NETWORKS } from "../../config";
 import dotenv from "dotenv";
@@ -20,11 +20,39 @@ const ctx = {
 
 const main = async () => {
     // const userAddr = getAddressFromMnemonicEthers(ctx);
-    const userAddr = HDNodeWallet.fromMnemonic(Mnemonic.fromPhrase(process.env.MNEMONIC_ARB!), "m/44'/60'/0'/0/1").address;
-    console.log("Using wallet:", userAddr);
-    const calls = await protocols.tokemak.deposit("tokemak:USDC", "26.899125", userAddr);
-    console.log(calls);
+    const userAddr = HDNodeWallet.fromMnemonic(Mnemonic.fromPhrase(process.env.MNEMONIC_ARB!), "m/44'/60'/0'/0/0").address;
+    // console.log("Using wallet:", userAddr);
+    // const calls = await protocols.tokemak.deposit("tokemak:USDC", "0.5", userAddr);
+    // const calls2 = await protocols.maxapy.deposit("maxapy:USDC", "0.5", userAddr);
+    // const calls3 = await protocols.wasabi.deposit("wasabi:USDC", "0.5", userAddr);
+    // console.log(calls);
+    // console.log(calls2);
+    // console.log(calls3);
     // await executeCallsEthers(ctx, calls)
+    // await executeCallsEthers(ctx, calls2)
+    // await executeCallsEthers(ctx, calls3)
+
+
+
+    // Withdraw ALL from Tokemak, Maxapy, Wasabi
+    // const tVault = protocols.tokemak.getVault("tokemak:USDC");
+    // const wVault = protocols.wasabi.getVault("wasabi:USDC");
+
+    // const [mShares] = await Promise.all([
+    //     // getShareTokenBalance(tVault.share, userAddr, protocols.tokemak.chain),
+    //     // getShareTokenBalance(wVault.share, userAddr, protocols.wasabi.chain),
+    // ]);
+    // console.log("tShares", tShares);
+    // console.log("wShares", wShares);
+
+    // const tWithdraw = tShares > 0n ? await protocols.tokemak.withdraw("tokemak:USDC", tShares, userAddr) : [];
+    // const wWithdraw = wShares > 0n ? await protocols.wasabi.withdraw("wasabi:USDC", wShares, userAddr) : [];
+
+    // if (tWithdraw.length) await executeCallsEthers(ctx, tWithdraw);
+    // if (mWithdraw.length) await executeCallsEthers(ctx, mWithdraw);
+    // if (wWithdraw.length) await executeCallsEthers(ctx, wWithdraw);
+
+
     // await swap("usdc", "usdt", "0.1", {
     //     network: "arbitrum",
     //     slippage: 5,                 // optional (0.30%)

@@ -8,7 +8,7 @@ export const ACTIVE_VAULT_IDS = [
     "wasabi_base_usdc",
     "tokemak_base_usdc_baseusd",
     "fluid-lending_base_usdc",
-    "maxapy_base_usdc",
+    // "maxapy_base_usdc",
     "morpho-blue_base_mwusdc",
     "silo-v2_arbitrum_usdc_127",
     "fluid-lending_arbitrum_usdc",

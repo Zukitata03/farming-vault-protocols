@@ -25,33 +25,36 @@ const Tokemak: Protocol = {
             decimals: v.decimals,
         };
     },
-    async deposit(vaultId, amount, wallet) {
+    async deposit(vaultId: string, amount: string | bigint, wallet: `0x${string}`) {
         const v = this.getVault(vaultId);
-        // const allowance = await getAllowance(v.depositToken, v.router, wallet, this.chain);
-        // console.log("allowance", allowance);
-        // let approveCall: ContractCall | undefined;
-        // console.log("amount type", typeof amount);
-        // console.log("allowance type", typeof allowance);
-        // if (amount > allowance) {
-        //     console.log("approving max uint256");
-        //     approveCall = buildCall(v.depositToken, erc20Abi, "approve", [v.router, maxUint256]);
-        // }
+
         const amountIn = coerceDepositAmount(vaultId, amount as string);
+        console.log("amountIn", amountIn);
         const slippageBps = 50;
         const BPS = 10000n;
         const exptectedShares = await previewDeposit(v.share, amountIn, this.chain);
         const MIN_SHARES_OUT = exptectedShares * (BPS - BigInt(slippageBps)) / BPS;
         console.log("MIN_SHARES_OUT", MIN_SHARES_OUT);
+
+        const calls: ContractCall[] = [];
+
+        const allowance = await getAllowance(v.depositToken, v.router, wallet, this.chain);
+        if (amountIn > allowance) {
+            calls.push(
+                buildCall(
+                    v.depositToken as `0x${string}`,
+                    erc20Abi as any,
+                    "approve",
+                    [v.router as `0x${string}`, maxUint256]
+                )
+            );
+        }
+
         const pullToken = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "pullToken", args: [v.depositToken, amountIn, v.router] });
         const approval = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "approve", args: [v.depositToken, v.share, amountIn] });
         const depData = encodeFunctionData({ abi: TOKEMAK_ABI, functionName: "deposit", args: [v.share, wallet as `0x${string}`, amountIn, MIN_SHARES_OUT] });
 
-        // Only include approveCall if it's defined
-        const calls = [];
-        // if (approveCall) {
-        //     calls.push(approveCall);
-        // }
-        calls.push(buildCall(v.router, TOKEMAK_ABI, "multicall", [[pullToken, approval, depData]]));
+        calls.push(buildCall(v.router as `0x${string}`, TOKEMAK_ABI as any, "multicall", [[pullToken, approval, depData]]));
 
         return calls;
     },

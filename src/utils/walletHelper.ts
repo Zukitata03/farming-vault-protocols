@@ -61,6 +61,7 @@ export async function getUSDCBalance(
     return BigInt(bal.value.amount);
   }
 
+
   const client = (clientByChain as any)[chain];
   const usdcAddress =
     chain === "arbitrum"
@@ -125,25 +126,42 @@ export async function previewDeposit(
 ): Promise<bigint> {
   const client = (clientByChain as any)[chain];
 
+  //   // Try ERC20 ABI first (in case it's a regular token with custom preview functions)
+  //   try {
+  //     return await client.readContract({
+  //       address: shareTokenAddress as `0x${string}`,
+  //       abi: erc20Abi,
+  //       functionName: "previewDeposit",
+  //       args: [amount],
+  //     }) as bigint;
+  //   } catch (error) {
+  //     console.log("ERC20 previewDeposit failed, trying ERC4626...");
+  //     // Fallback to ERC4626 ABI
+  //     return await client.readContract({
+  //       address: shareTokenAddress as `0x${string}`,
+  //       abi: erc4626Abi,
+  //       functionName: "previewDeposit",
+  //       args: [amount],
+  //     }) as bigint;
+  //   }
+  // }
+
+
   // Try ERC20 ABI first (in case it's a regular token with custom preview functions)
   try {
-    return await client.readContract({
-      address: shareTokenAddress as `0x${string}`,
-      abi: erc20Abi,
-      functionName: "previewDeposit",
-      args: [amount],
-    }) as bigint;
-  } catch (error) {
-    console.log("ERC20 previewDeposit failed, trying ERC4626...");
-    // Fallback to ERC4626 ABI
     return await client.readContract({
       address: shareTokenAddress as `0x${string}`,
       abi: erc4626Abi,
       functionName: "previewDeposit",
       args: [amount],
     }) as bigint;
+  } catch (error) {
+    console.log("ERC4626 previewDeposit failed");
+    return 0n;
   }
+
 }
+
 
 
 // // Ethers v5 helpers (for Uniswap compatibility)
