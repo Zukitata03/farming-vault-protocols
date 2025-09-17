@@ -1,13 +1,19 @@
 {
   "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@jup-ag/lend": "^0.0.99",
+    "@kamino-finance/klend-sdk": "^7.0.8",
     "@morpho-org/blue-sdk": "^3.0.9",
     "@morpho-org/blue-sdk-viem": "^3.1.1",
     "@morpho-org/morpho-ts": "2.4.1",
+    "@project-serum/anchor": "^0.26.0",
     "@skip-go/client": "^1.5.2",
+    "@solana/spl-memo": "^0.2.5",
     "@solana/spl-token": "^0.4.13",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-phantom": "^0.9.28",
     "@solana/web3.js": "^1.98.4",
+    "@types/bn.js": "^5.2.0",
     "@uniswap/sdk-core": "^7.7.2",
     "@uniswap/smart-order-router": "^4.22.16",
     "@uniswap/v3-sdk": "^3.25.2",
@@ -20,11 +26,6 @@
     "protobufjs": "^7.5.3",
     "typescript": "^5.9.2",
     "viem": "^2.33.3",
-    "@coral-xyz/anchor": "^0.31.1",
-    "@kamino-finance/klend-sdk": "^7.0.8",
-    "@project-serum/anchor": "^0.26.0",
-    "@solana/spl-memo": "^0.2.5",
-    "@types/bn.js": "^5.2.0",
     "wasabi-solana-ts": "^1.2.0"
   }
 }

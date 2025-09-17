@@ -14,7 +14,8 @@
 
 
 // // --- Example usage ---
-// async function main() {
+// 
+
 //     // Example input
 //     const input = {
 //         token: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", // not used directly in this contract, but included for extensibility
@@ -57,4 +58,31 @@
 //     // console.log("Unsigned withdraw tx:", withdrawTx);
 // }
 
+// main().catch(console.error);
+
+// import * as anchor from "@coral-xyz/anchor";
+// import { Program, Wallet } from "@coral-xyz/anchor";
+// import { Jupiter } from "./src/protocols/SolanaProtocols/Jupiter/Jupiter";
+// import { Lending } from "/Users/mac/Desktop/Astar Group/Farming_vault_protocols/farming-vault-protocols/src/protocols/SolanaProtocols/Jupiter/target/types/jupiter-lend";
+// import fs from 'fs';
+// import path from 'path';
+// import { Transaction } from "@solana/web3.js";
+// import { get } from "http";
+// async function main() {
+//     let provider = anchor.AnchorProvider.env();
+//     const idl = JSON.parse(fs.readFileSync(path.resolve("/Users/mac/Desktop/Astar Group/Farming_vault_protocols/farming-vault-protocols/src/protocols/SolanaProtocols/Jupiter/target/idl/jupiter-lend.json"), 'utf-8')); 
+//     const lendingProgram = new Program<Lending>(idl, provider);
+//     const jupiter = new Jupiter(
+//         lendingProgram,
+//         provider,
+//     );
+//     const depositIxs = await jupiter.deposit(new anchor.BN(1000000));
+//     //const withdrawIxs = await jupiter.withdraw(new anchor.BN(1000000));
+//     const getPosition = await jupiter.getPosition(1);
+//     console.log("getPosition: ", getPosition);
+//     // const tx = new Transaction().add(...depositIxs);
+//     // const signature = await provider.sendAndConfirm(tx);
+
+//     // console.log("✅ Deposit tx signature:", signature);
+// }
 // main().catch(console.error);
